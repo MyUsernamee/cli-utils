@@ -1,0 +1,115 @@
+#!/usr/bin/python
+from argparse import ArgumentParser
+from pdf2image import convert_from_path, convert_from_bytes
+import csv
+from datetime import date
+from tqdm import tqdm
+import re
+
+def main(input_file, output_file, questions_per_page=2):
+
+    input_csv = csv.reader(open(input_file).readlines())
+    title = next(input_csv)[0]
+    print(f"Found rows from {input_file}. Title is: {title}")
+    current_date = date.today()
+
+    body = ""
+    answer_key=False
+    for (i, row) in tqdm(enumerate(input_csv)):
+
+        if len(row) >= 2:
+            body += " ".join(row[2:])
+
+        if row[0] == "AK":
+            answer_key = True
+            body += "\n\\pagebreak\n\\subsection*{Answers:}\n"
+            continue
+
+        body = body + f"""\n
+\\subparagraph{{{row[0].strip("\"")}}}
+
+{
+row[1][2:].strip("\"") if re.match(r'\/\/', row[1].strip("\"")) else f'\\[\n{ row[1].strip("\"") }\n\\]'
+}
+
+\\vfill\n\n"""
+
+        if (i % questions_per_page) == questions_per_page - 1 and not answer_key:
+            body += "\n\\pagebreak\n"
+
+    with open(output_file, "w") as f:
+
+        f.write(f"""
+\\documentclass[fleqn]{{article}}
+\\usepackage{{amsmath}}
+\\usepackage{{shortex}}
+\\title{{{title}}}
+\\begin{{document}}
+
+\\maketitle
+\\pagebreak
+{body}
+\\end{{document}}
+                """)  
+   
+pdf_cache={}
+def read_pdf(pdf):
+
+    if pdf in pdf_cache:
+        return pdf_cache[pdf]
+
+    # First we conver the pdf to a surya json file
+    page_images = convert_from_path(pdf)
+    recognition_predictor = RecognitionPredictor()
+    detection_predictor = DetectionPredictor()
+
+    predictions = recognition_predictor(page_images, det_predictor=detection_predictor)
+    predictions = [y for x in predictions for y in x.text_lines]
+
+    pdf_cache[pdf] = predictions
+    return predictions
+
+
+
+def gen_csv(pdf, filename):
+        # Now we get all of the question numbers from the csv
+    question_numbers = []
+    title = ""
+    with open(filename, "r") as f:
+        questions_csv = csv.reader(f)
+        title = next(questions_csv)[0] # Skip the first line
+
+        for row in questions_csv:
+            if len(row) >= 2:
+                pdf = row[1]
+            question_numbers.append((row[0], pdf, row[2] if len(row) == 3 else None))
+
+    # We then open a writer because we are going to populate the csv
+    with open(filename, "w") as f:
+        final_csv = csv.writer(f)
+        final_csv.writerow([title])
+
+        for (question_number, pdf, preamble) in question_numbers:
+            
+            predictions = read_pdf(pdf)
+            # Find the question text_line
+            for line in predictions:
+                if re.match(fr"<b>{question_number.strip()}\.\s*</b>", line.text ) and re.findall(r"<math>(.*)<\/math>", line.text):
+                    # This is the question
+                    final_csv.writerow([question_number.strip(),re.search(r"<math>(.*)<\/math>", line.text). group(1) or line.text, preamble])
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+
+    _ = parser.add_argument('filename')
+    _ = parser.add_argument("-f", "--from_pdf", help="Is supplied it will auto populate a csv with the given question from the pdf.")
+    _ = parser.add_argument("-o", "--output", default="output.tex")
+    _ = parser.add_argument("-q", "--questions_per_page", default=2)
+
+    args = parser.parse_args()
+
+    if args.from_pdf is not None:
+        # Input file is a pdf and we need to run ocr on it to get problems
+        gen_csv(args.from_pdf, args.filename)
+
+    main(args.filename, args.output, int( args.questions_per_page ))
