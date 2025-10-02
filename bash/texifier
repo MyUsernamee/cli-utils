@@ -1,1 +1,9 @@
 #!/bin/bash
+
+temp_path='/tmp/tex/results.json'
+cp $1 /tmp/tex.png
+result=$(surya_ocr /tmp/tex.png --output_dir /tmp/ && fx $temp_path '.tex[].text_lines[].text' 'x.join("\n")')
+result=$(echo "$result" | perl -pe 's/<math>(.*?)<\/math>/\$\1\$/g')
+result=$(echo "$result" | perl -pe  's/<math display="inline">(.*?)<\/math>/\$\1\$/g')
+result=$(echo "$result" | perl -pe  's/<math display="block">(.*?)<\/math>/\\[\1\\]/g')
+echo "$result"

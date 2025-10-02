@@ -30,10 +30,12 @@ def main():
 
     with open(args.filename, "r") as f:
         file_lines = f.readlines()
-        file_content = "\n".join(file_lines[1:])
+        file_content = "".join(file_lines[1:])
         title = file_lines[0].strip()
-        problems = re.findall(regex, file_content)
+        problems = [(a.strip(), b.strip()) for a, b in re.findall(regex, file_content)]
 
+        print(problems)
+        print(title)
         with open(os.path.join( os.path.dirname(args.filename),os.path.basename(args.filename).split(".")[0] + ".tex" ), "w") as f:
             f.write(template.expand({"title": title, "problems": problems}))
 
