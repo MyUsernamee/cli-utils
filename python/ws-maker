@@ -16,20 +16,11 @@ def main(input_file, output_file, questions_per_page=2):
     body = ""
     answer_key=False
     for (i, row) in tqdm(enumerate(input_csv)):
-
-        if len(row) >= 2:
-            body += " ".join(row[2:])
-
-        if row[0] == "AK":
-            answer_key = True
-            body += "\n\\pagebreak\n\\subsection*{Answers:}\n"
-            continue
-
         body = body + f"""\n
 \\subparagraph{{{row[0].strip("\"")}}}
 
 {
-row[1][2:].strip("\"") if re.match(r'\/\/', row[1].strip("\"")) else f'\\[\n{ row[1].strip("\"") }\n\\]'
+row[1].strip("\"")
 }
 
 \\vfill\n\n"""
