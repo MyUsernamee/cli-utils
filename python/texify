@@ -1,0 +1,7 @@
+#!/bin/python
+
+import os
+import sys
+
+# Read stdin to string
+
