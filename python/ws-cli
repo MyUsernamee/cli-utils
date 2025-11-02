@@ -32,7 +32,7 @@ def main():
         file_lines = f.readlines()
         file_content = "".join(file_lines[1:])
         title = file_lines[0].strip()
-        problems = [(a.strip(), b.strip()) for a, b in re.findall(regex, file_content)]
+        problems = re.findall(regex, file_content)
 
         print(problems)
         print(title)
