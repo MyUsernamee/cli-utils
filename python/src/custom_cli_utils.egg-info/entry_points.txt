@@ -1,0 +1,3 @@
+[console_scripts]
+ws-cli = custom_cli_utils.ws_cli:main
+ws-maker = custom_cli_utils.ws_maker:cli

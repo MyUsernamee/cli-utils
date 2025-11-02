@@ -89,7 +89,7 @@ def gen_csv(pdf, filename):
                     # This is the question
                     final_csv.writerow([question_number.strip(),re.search(r"<math>(.*)<\/math>", line.text). group(1) or line.text, preamble])
 
-if __name__ == "__main__":
+def cli():
     parser = ArgumentParser()
 
     _ = parser.add_argument('filename')
@@ -104,3 +104,4 @@ if __name__ == "__main__":
         gen_csv(args.from_pdf, args.filename)
 
     main(args.filename, args.output, int( args.questions_per_page ))
+

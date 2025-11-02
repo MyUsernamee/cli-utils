@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = 'custom-cli-utils'
+dynamic = ["version"]
+dependencies = [
+    'step-template'
+]
+
+[project.scripts]
+ws-cli="custom_cli_utils.ws_cli:main"
+ws-maker="custom_cli_utils.ws_maker:cli"
