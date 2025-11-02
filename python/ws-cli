@@ -1,4 +1,4 @@
-#!/bin/python
+#!~/.venv/bin/python
 
 from argparse import ArgumentParser
 import os
