@@ -1,3 +1,4 @@
 [console_scripts]
+ocr_page = custom_cli_utils.ocr_page:main
 ws-cli = custom_cli_utils.ws_cli:main
 ws-maker = custom_cli_utils.ws_maker:cli

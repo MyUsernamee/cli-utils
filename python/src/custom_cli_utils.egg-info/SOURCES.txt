@@ -1,4 +1,5 @@
 pyproject.toml
+src/custom_cli_utils/ocr_page.py
 src/custom_cli_utils/texify.py
 src/custom_cli_utils/ws_cli.py
 src/custom_cli_utils/ws_maker.py
